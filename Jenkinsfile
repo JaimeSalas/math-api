@@ -2,6 +2,8 @@ pipeline {
     agent any 
     environment {
         imageName = 'jaimesalas/math-api:latest'
+        ec2Instance = 'ec2-15-236-142-40.eu-west-3.compute.amazonaws.com'
+        appPort = 80
     }
     stages {
         stage('Install dependencies') {
@@ -26,6 +28,23 @@ pipeline {
                 sh 'npm test'
             }
         }
+        stage('Staging Tests') {
+            when {
+                branch 'staging'
+            }
+            agent {
+                docker {
+                    image 'node:14-alpine'
+                    reuseNode true
+                }
+            }
+            environment {
+                BASE_API_URL = "http://$ec2Instance:$appPort"
+            }
+            steps {
+                sh 'npm run test:e2e'
+            }
+        }
         stage('Build image & push it to DockerHub') {
             when {
                 branch 'develop'
@@ -46,8 +65,6 @@ pipeline {
             }
             environment {
                 containerName = 'math-api'
-                ec2Instance = 'ec2-15-236-142-40.eu-west-3.compute.amazonaws.com'
-                appPort = 80
             }
             steps {
                 withCredentials(

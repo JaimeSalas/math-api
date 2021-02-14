@@ -11,7 +11,9 @@
     "type-check": "tsc --noEmit",
     "type-check:watch": "npm run type-check -- --watch",
     "clean": "rimraf dist",
-    "test": "jest --verbose"
+    "test": "jest --verbose math.helpers.spec",
+    "start:test:e2e": "npm start -- -r test:e2e",
+    "test:e2e": "jest --verbose api.spec"
   },
   "author": "Lemoncode",
   "license": "MIT",
@@ -39,6 +41,9 @@
   },
   "jest": {
     "preset": "ts-jest",
-    "restoreMocks": true
+    "restoreMocks": true,
+    "setupFiles": [
+      "dotenv/config"
+    ]
   }
 }
