@@ -27,6 +27,9 @@ pipeline {
             }
         }
         stage('Build image & push it to DockerHub') {
+            when {
+                branch 'develop'
+            }
             steps {
                 script {
                     def dockerImage = docker.build(imageName)
@@ -34,6 +37,29 @@ pipeline {
                         dockerImage.push()
                         sh 'docker rmi $imageName'
                     }
+                }
+            }
+        }
+        stage('Deploy to server') {
+            when {
+                branch 'develop'
+            }
+            environment {
+                containerName = 'math-api'
+                ec2Instance = 'ec2-15-236-142-40.eu-west-3.compute.amazonaws.com'
+                appPort = 80
+            }
+            steps {
+                withCredentials([
+                    credentialsId: 'ec2-ssh-credentials',
+                    keyFileVariable: 'identityFile',
+                    passphraseVariable: 'passphrase',
+                    usernameVariable: 'user'
+                ]) {
+                    sh '''
+                        ssh -o StrictHostKeyChecking=no -i $identityFile $user@$ec2Instance \
+                        APP_PORT=$appPort CONTAINER_NAME=$containerName IMAGE_NAME=$imageName bash < ./scripts/deploy.sh
+                    '''
                 }
             }
         }
