@@ -50,12 +50,12 @@ pipeline {
                 appPort = 80
             }
             steps {
-                withCredentials([
+                withCredentials(
                     credentialsId: 'ec2-ssh-credentials',
                     keyFileVariable: 'identityFile',
                     passphraseVariable: 'passphrase',
                     usernameVariable: 'user'
-                ]) {
+                ) {
                     sh '''
                         ssh -o StrictHostKeyChecking=no -i $identityFile $user@$ec2Instance \
                         APP_PORT=$appPort CONTAINER_NAME=$containerName IMAGE_NAME=$imageName bash < ./scripts/deploy.sh
