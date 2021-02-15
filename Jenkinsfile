@@ -94,27 +94,11 @@ pipeline {
           steps {
             script {
               if (params.CANARY_DEPLOYMENT) {
-                withDockerRegistry([credentialsId: 'dockerhub-credentials', url: '']) {
-                    sh '''
-                      echo pulling latest and updating
-                      docker pull ${imageName}:latest
-                      docker tag ${imageName}:latest ${imageName}:v2
-                      docker push ${imageName}:v2
-                    '''
-                }
-
+                versioningLatestAndPushImage(imageName, 'v2')
                 cleanLocalImages(imageName, 'v2')
                 
                 sh 'echo connect to kubernetes and apply canary deployement...'
               } else {
-                // withDockerRegistry([credentialsId: 'dockerhub-credentials', url: '']) {
-                //     sh '''
-                //       echo pulling latest and updating
-                //       docker pull ${imageName}:latest
-                //       docker tag ${imageName}:latest ${imageName}:v1
-                //       docker push ${imageName}:v1
-                //     '''
-                // }
                 versioningLatestAndPushImage(imageName, 'v1')
                 cleanLocalImages(imageName, 'v1')
               }
