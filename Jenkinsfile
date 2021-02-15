@@ -1,5 +1,8 @@
 pipeline {
     agent any 
+    parameters {
+        booleanParam(name: 'CanaryDeployment', defaultValue: false, description: 'Deploy Canary?')
+    }
     environment {
         imageName = 'jaimesalas/math-api:latest'
         ec2Instance = 'ec2-15-236-142-40.eu-west-3.compute.amazonaws.com'
@@ -83,6 +86,20 @@ pipeline {
                     }
                 }
             }
+        }
+        stage('Canary Deploy') {
+          when {
+            // branch 'production'
+            expression {
+              return GIT_BRANCH == 'production'
+            }
+          }
+          steps {
+            echo "${GIT_BRANCH}"
+            echo 'tag current version with v1 and push to registry'
+            echo 'create docker immage with v2 from current code solution'
+
+          }
         }
     }
 }
