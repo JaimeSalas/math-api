@@ -1,10 +1,10 @@
 pipeline {
     agent any 
     parameters {
-        booleanParam(name: 'CanaryDeployment', defaultValue: false, description: 'Deploy Canary?')
+        booleanParam(name: 'CANARY_DEPLOYMENT', defaultValue: false, description: 'Deploy Canary?')
     }
     environment {
-        imageName = 'jaimesalas/math-api:latest'
+        imageName = 'jaimesalas/math-api'
         ec2Instance = 'ec2-15-236-142-40.eu-west-3.compute.amazonaws.com'
         appPort = 80
     }
@@ -54,7 +54,7 @@ pipeline {
             }
             steps {
                 script {
-                    def dockerImage = docker.build(imageName)
+                    def dockerImage = docker.build(imageName + ':latest')
                     withDockerRegistry([credentialsId: 'dockerhub-credentials', url: '']) {
                         dockerImage.push()
                         sh 'docker rmi $imageName'
@@ -89,16 +89,40 @@ pipeline {
         }
         stage('Canary Deploy') {
           when {
-            // branch 'production'
-            expression {
-              return GIT_BRANCH == 'production'
-            }
+            branch 'production'
+            // expression {
+            //   GIT_BRANCH = sh(returnStdout: true, script: 'git rev-parse --abbrev-ref HEAD').trim()
+            //   return GIT_BRANCH == 'production' && params.CANARY_DEPLOYMENT
+            // }
           }
           steps {
-            echo "${GIT_BRANCH}"
+            // echo "${GIT_BRANCH}"
             echo 'tag current version with v1 and push to registry'
             echo 'create docker immage with v2 from current code solution'
-
+            script {
+              if (params.CANARY_DEPLOYMENT) {
+                withDockerRegistry([credentialsId: 'dockerhub-credentials', url: '']) {
+                    sh '''
+                      echo pulling latest and updating
+                      docker pull ${imageName}:latest
+                      docker tag ${imageName}:v2
+                      docker push ${imageName}:v2
+                    '''
+                    sh 'docker rmi $imageName'
+                }
+                sh 'echo connect to kubernetes and apply canary deployement...'
+              } else {
+                withDockerRegistry([credentialsId: 'dockerhub-credentials', url: '']) {
+                    sh '''
+                      echo pulling latest and updating
+                      docker pull ${imageName}:latest
+                      docker tag ${imageName}:v1
+                      docker push ${imageName}:v1
+                    '''
+                    sh 'docker rmi $imageName'
+                }
+              }
+            }
           }
         }
     }
