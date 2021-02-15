@@ -105,22 +105,30 @@ pipeline {
                     sh '''
                       echo pulling latest and updating
                       docker pull ${imageName}:latest
-                      docker tag ${imageName}:v2
+                      docker tag ${imageName}:latest ${imageName}:v2
                       docker push ${imageName}:v2
                     '''
-                    sh 'docker rmi $imageName'
                 }
+
+                echo 'removing local images'
+                sh 'docker rmi ${imageName}:latest'
+                sh 'docker rmi ${imageName}:v2'
+                
                 sh 'echo connect to kubernetes and apply canary deployement...'
               } else {
                 withDockerRegistry([credentialsId: 'dockerhub-credentials', url: '']) {
                     sh '''
                       echo pulling latest and updating
                       docker pull ${imageName}:latest
-                      docker tag ${imageName}:v1
+                      docker tag ${imageName}:latest ${imageName}:v1
                       docker push ${imageName}:v1
                     '''
                     sh 'docker rmi $imageName'
                 }
+
+                echo 'removing local images'
+                sh 'docker rmi ${imageName}:latest'
+                sh 'docker rmi ${imageName}:v1'
               }
             }
           }
