@@ -123,7 +123,7 @@ pipeline {
                       docker tag ${imageName}:latest ${imageName}:v1
                       docker push ${imageName}:v1
                     '''
-                    sh 'docker rmi $imageName'
+                    // sh 'docker rmi $imageName'
                 }
 
                 echo 'removing local images'
