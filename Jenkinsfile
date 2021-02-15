@@ -92,8 +92,6 @@ pipeline {
             branch 'production'
           }
           steps {
-            echo 'tag current version with v1 and push to registry'
-            echo 'create docker immage with v2 from current code solution'
             script {
               if (params.CANARY_DEPLOYMENT) {
                 withDockerRegistry([credentialsId: 'dockerhub-credentials', url: '']) {
@@ -105,24 +103,19 @@ pipeline {
                     '''
                 }
 
-                echo 'removing local images'
-                sh 'docker rmi ${imageName}:latest'
-                sh 'docker rmi ${imageName}:v2'
+                cleanLocalImages(imageName, 'v2')
                 
                 sh 'echo connect to kubernetes and apply canary deployement...'
               } else {
-                withDockerRegistry([credentialsId: 'dockerhub-credentials', url: '']) {
-                    sh '''
-                      echo pulling latest and updating
-                      docker pull ${imageName}:latest
-                      docker tag ${imageName}:latest ${imageName}:v1
-                      docker push ${imageName}:v1
-                    '''
-                }
-
-                // echo 'removing local images'
-                // sh 'docker rmi ${imageName}:latest'
-                // sh 'docker rmi ${imageName}:v1'
+                // withDockerRegistry([credentialsId: 'dockerhub-credentials', url: '']) {
+                //     sh '''
+                //       echo pulling latest and updating
+                //       docker pull ${imageName}:latest
+                //       docker tag ${imageName}:latest ${imageName}:v1
+                //       docker push ${imageName}:v1
+                //     '''
+                // }
+                versioningLatestAndPushImage(imageName, 'v1')
                 cleanLocalImages(imageName, 'v1')
               }
             }
@@ -131,10 +124,19 @@ pipeline {
     }
 }
 
+void versioningLatestAndPushImage(String imageName, String version) {
+  withDockerRegistry([credentialsId: 'dockerhub-credentials', url: '']) {
+      echo "pull latest"
+      sh "docker pull ${imageName}:latest"
+      sh "echo tagging to ${version}"
+      sh "docker tag ${imageName}:latest ${imageName}:${version}"
+      sh "echo pushing ${imageName}:${version}"
+      sh "docker push ${imageName}:${version}"
+  }
+} 
+
 void cleanLocalImages(String imageName, String version) {
-  sh '''
-    echo removing local images
-    docker rmi ${imageName}:latest
-    docker rmi ${imageName}:"${version}"
-  '''
+  echo 'removing local images'
+  sh "docker rmi ${imageName}:latest"
+  sh "docker rmi ${imageName}:${version}"
 }
