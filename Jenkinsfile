@@ -88,14 +88,8 @@ pipeline {
             }
         }
         stage('Canary Deploy') {
-          // when {
-          //   branch 'production'
-          // }
           when {
-             expression {
-                  GIT_BRANCH = sh(returnStdout: true, script: 'git rev-parse --abbrev-ref HEAD').trim()
-                  return GIT_BRANCH == 'production' && params.CANARY_DEPLOYMENT
-              }
+            branch 'production'
           }
           steps {
             echo 'tag current version with v1 and push to registry'
@@ -124,15 +118,23 @@ pipeline {
                       docker tag ${imageName}:latest ${imageName}:v1
                       docker push ${imageName}:v1
                     '''
-                    // sh 'docker rmi $imageName'
                 }
 
-                echo 'removing local images'
-                sh 'docker rmi ${imageName}:latest'
-                sh 'docker rmi ${imageName}:v1'
+                // echo 'removing local images'
+                // sh 'docker rmi ${imageName}:latest'
+                // sh 'docker rmi ${imageName}:v1'
+                cleanLocalImages(imageName, 'v1')
               }
             }
           }
         }
     }
+}
+
+void cleanLocalImages(String imageName, String version) {
+  sh '''
+    echo removing local images
+    docker rmi ${imageName}:latest
+    docker rmi ${imageName}:${version}
+  '''
 }
