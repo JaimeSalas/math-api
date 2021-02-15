@@ -88,8 +88,14 @@ pipeline {
             }
         }
         stage('Canary Deploy') {
+          // when {
+          //   branch 'production'
+          // }
           when {
-            branch 'production'
+             expression {
+                  GIT_BRANCH = sh(returnStdout: true, script: 'git rev-parse --abbrev-ref HEAD').trim()
+                  return GIT_BRANCH == 'production' && params.CANARY_DEPLOYMENT
+              }
           }
           steps {
             echo 'tag current version with v1 and push to registry'
