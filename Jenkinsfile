@@ -135,6 +135,6 @@ void cleanLocalImages(String imageName, String version) {
   sh '''
     echo removing local images
     docker rmi ${imageName}:latest
-    docker rmi ${imageName}:${version}
+    docker rmi ${imageName}:"${version}"
   '''
 }
