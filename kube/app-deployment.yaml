@@ -35,6 +35,6 @@ spec:
           image: jaimesalas/math-api:v1
           env:
             - name: PORT
-              value: 80
+              value: "80"
           ports:
             - containerPort: 80
