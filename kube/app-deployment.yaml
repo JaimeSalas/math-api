@@ -29,12 +29,12 @@ spec:
       labels:
         app: math
         version: v1
-  spec:
-    containers:
-      - name: math
-        image: jaimesalas/math-api:v1
-        env:
-          - name: PORT
-            vlaue: 80
-        ports:
-          - containerPort: 80
+    spec:
+      containers:
+        - name: math
+          image: jaimesalas/math-api:v1
+          env:
+            - name: PORT
+              value: 80
+          ports:
+            - containerPort: 80
