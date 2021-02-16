@@ -38,3 +38,29 @@ spec:
               value: "80"
           ports:
             - containerPort: 80
+---
+apiVersion: apps/v2
+kind: Deployment
+metadata:
+  name: math-v2
+  labels:
+    version: v2
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: math
+  template:
+    metadata:
+      labels:
+        app: math
+        version: v2
+    spec:
+      containers:
+        - name: math
+          image: jaimesalas/math-api:v2
+          env:
+            - name: PORT
+              value: "80"
+          ports:
+            - containerPort: 80
