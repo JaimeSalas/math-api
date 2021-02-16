@@ -109,14 +109,12 @@ pipeline {
               if (params.CANARY_DEPLOYMENT) {
                 versioningLatestAndPushImage(imageName, 'v2')
                 cleanLocalImages(imageName, 'v2')
-                
-                // sh 'echo connect to kubernetes and apply canary deployement...'
-                withKubeConfig([credentialsId: 'K8S-FILE', serverUrl: 'https://0762874B88CC99AED4773002D066C462.sk1.eu-west-3.eks.amazonaws.com']) {
-                  sh 'kubectl apply -f kube/app-deployment.yaml'
-                }
               } else {
                 versioningLatestAndPushImage(imageName, 'v1')
                 cleanLocalImages(imageName, 'v1')
+                withKubeConfig([credentialsId: 'K8S-FILE', serverUrl: 'https://0762874B88CC99AED4773002D066C462.sk1.eu-west-3.eks.amazonaws.com']) {
+                  sh 'kubectl apply -f kube/app-deployment.yaml'
+                }
               }
             }
           }
