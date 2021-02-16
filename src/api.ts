@@ -8,7 +8,7 @@ api.get('/sum', async (req, res) => {
     const params = req.query;
     const a: number = Number(params.a);
     const b: number = Number(params.b);
-    const result = `The result is ${sum(a, b)}`;
+    const result = `The result is in v2 ${sum(a, b)}`;
     res.send(result);
   } catch (error) {
     console.log({ error });
