@@ -5,7 +5,7 @@ pipeline {
     }
     environment {
         imageName = 'jaimesalas/math-api'
-        ec2Instance = 'ec2-15-236-142-40.eu-west-3.compute.amazonaws.com'
+        ec2Instance = 'ec2-35-181-7-177.eu-west-3.compute.amazonaws.com'
         appPort = 80
         githubAccount = "jaimesalas"
         githubRepoName = "math-api"
